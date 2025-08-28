@@ -1,6 +1,6 @@
 # RideXplorers iOS App
 
-Application iOS pour explorer les parcs et les parcours de vélo.
+Application iOS pour explorer les parcs, ride & coasters du monde entiers.
 
 ## Architecture
 
@@ -17,8 +17,8 @@ RideXplorers/
 │   ├── Parks/                    # Module des parcs
 │   │   ├── ParksView.swift       # Vue principale des parcs
 │   │   └── NewsSliderView.swift  # Carrousel des actualités
-│   ├── Ride/                     # Module des parcours
-│   │   └── RideView.swift        # Vue des parcours
+│   ├── Ride/                     # Module des ride
+│   │   └── RideView.swift        # Vue des ride
 │   ├── Stats/                    # Module des statistiques
 │   │   └── StatsView.swift       # Vue des statistiques
 │   └── Search/                   # Module de recherche
@@ -43,8 +43,8 @@ RideXplorers/
 
 ### Features Layer
 Chaque fonctionnalité est organisée dans son propre module :
-- **Parks** : Gestion des parcs et actualités
-- **Ride** : Gestion des parcours de vélo
+- **Parks** : Affichage des parks
+- **Ride** : Affichage des rides
 - **Stats** : Affichage des statistiques
 - **Search** : Fonctionnalité de recherche
 
@@ -82,8 +82,4 @@ Chaque fonctionnalité est organisée dans son propre module :
 
 ## Structure des Données
 
-L'application utilise une API REST pour récupérer les actualités des parcs. Les données sont structurées selon le modèle `NewsItem` qui contient :
-- Informations sur le parc
-- Détails de la randonnée
-- Images et descriptions
-- Métadonnées de localisation
+L'application utilise une API REST pour récupérer les actualités des parcs. Les données sont structurées selon le modèle `NewsItem`.
