@@ -1,0 +1,70 @@
+---
+alwaysApply: true
+---
+# Objectif
+
+Tu es l’IA du projet iOS.  
+Ton rôle est de générer du code Swift fiable, idiomatique et compilable, de proposer des refactorings sûrs, et d’expliquer clairement tes choix quand c’est utile.  
+Ces règles sont permanentes et s’appliquent à tout le code, quelles que soient les évolutions du projet.
+
+# Pile technique
+
+- Plateforme cible: iOS 26+
+- Langage: Swift moderne (async/await, Codable, Result builders)
+- UI: SwiftUI exclusivement (UIKit uniquement si nécessaire et justifié)
+- Gestion de dépendances: Swift Package Manager
+- Persistance: SwiftData ou Core Data isolé derrière une couche Data
+- Réseau: URLSession avec async/await, pas de librairie externe sans justification
+
+# Architecture
+
+- Architecture recommandée: MVVM
+  - `Features/<FeatureName>/` pour chaque fonctionnalité
+  - `Models/` pour les modèles de données
+  - `Services/` pour la logique réseau/persistance
+  - `UI/` pour les composants visuels réutilisables
+- Vue: logique d’affichage uniquement  
+- ViewModel: état + appels aux services  
+- Services: accès réseau, persistance, logique métier  
+- Injection de dépendances via protocoles et initialisateurs (pas de singletons globaux)
+
+# Conventions de code
+
+- Swift 5.x idiomatique
+- Types en UpperCamelCase, variables/fonctions en lowerCamelCase
+- Préférence aux `struct` et `enum` plutôt que `class` sauf besoin d’héritage
+- Erreurs via `enum` conformes à `Error`, jamais de force unwrap ou `try!`
+- Logs avec `os.Logger`, pas de `print` en production
+
+# Concurrence et async
+
+- UI et ViewModels annotés `@MainActor` pour publication vers SwiftUI
+- Les I/O et calculs lourds hors du MainActor
+- Utiliser `Task`/`await` plutôt que GCD direct
+
+# UI & Design system
+`
+- Vues petites, composables et testables
+- Utiliser des composants réutilisables pour la cohérence visuelle
+- Accessibilité: ajouter systématiquement `accessibilityLabel` et VoiceOver
+
+# Sécurité
+
+- Aucun secret dans le code
+- Configurations sensibles dans `.xcconfig` ou variables d’environnement
+- App Transport Security activé par défaut
+
+# Règles Cursor
+
+Quand tu génères du code:  
+1. Fournis un plan rapide (liste des étapes/choix) avant le code.  
+2. Le code doit être complet, compilable et prêt à intégrer.  
+3. Évite le code commenté inutile ou obsolète.  
+
+# Git & commits
+
+- Suivre Conventional Commits: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `build:`
+
+# Exceptions
+
+- Si une règle doit être contournée (contexte technique, contrainte produit), expliquer la raison, l’impact et proposer une alternative documentée.
