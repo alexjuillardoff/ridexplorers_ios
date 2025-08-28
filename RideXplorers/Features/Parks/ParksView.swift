@@ -3,8 +3,11 @@ import SwiftUI
 struct ParksView: View {
     var body: some View {
         PageView(title: "Parks") {
-            NewsSliderView()
-            Spacer()
+            VStack(spacing: 0) {
+                NewsSliderView()
+                    .padding(.top, -20)
+                Spacer()
+            }
         }
     }
 }

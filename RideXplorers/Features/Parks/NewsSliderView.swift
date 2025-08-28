@@ -8,8 +8,7 @@ struct NewsSliderView: View {
     private let autoSlideTimer = Timer.publish(every: 7, on: .main, in: .common).autoconnect()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            // Optional header removed per user edit
+        VStack(alignment: .leading, spacing: 0) {
             if isLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity)
@@ -17,16 +16,14 @@ struct NewsSliderView: View {
                 Text(errorMessage)
                     .foregroundColor(.red)
                     .font(.footnote)
-                    .padding(.horizontal)
             } else if newsItems.isEmpty {
                 Text("Pas de news disponible")
                     .font(.footnote)
                     .foregroundColor(.secondary)
-                    .padding(.horizontal)
             } else {
                 GeometryReader { geo in
                     TabView(selection: $currentIndex) {
-                        ForEach(Array(newsItems.enumerated()), id: \..offset) { index, item in
+                        ForEach(Array(newsItems.enumerated()), id: \.offset) { index, item in
                             NewsCard(item: item)
                                 .frame(width: geo.size.width)
                                 .tag(index)
@@ -70,7 +67,7 @@ private struct NewsCard: View {
     let item: NewsItem
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading) {
             // Headline (blue, all caps)
             Text(item.main_news.uppercased())
                 .font(.caption)
@@ -87,8 +84,9 @@ private struct NewsCard: View {
             Text("\(item.city), \(item.country)")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
+                .padding(.bottom, 8)
 
-            // Image with gradient and bottom information (fixed size for uniform layout)
+            // Image with gradient and bottom information
             ZStack(alignment: .bottomLeading) {
                 let imageHeight: CGFloat = 200
                 Group {
@@ -140,7 +138,7 @@ private struct NewsCard: View {
             }
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
-        .padding(8)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -152,7 +150,5 @@ private struct NewsCard: View {
 struct NewsSliderView_Previews: PreviewProvider {
     static var previews: some View {
         NewsSliderView()
-            .padding()
-            .previewLayout(.sizeThatFits)
     }
 }
