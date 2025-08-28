@@ -156,5 +156,3 @@ struct NewsSliderView_Previews: PreviewProvider {
             .previewLayout(.sizeThatFits)
     }
 }
-
-

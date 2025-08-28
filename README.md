@@ -1,65 +1,89 @@
-# RideXplorers
+# RideXplorers iOS App
 
-Une application iOS développée avec SwiftUI pour explorer les parcs et les attractions.
-
-## Description
-
-RideXplorers est une application mobile iOS qui permet aux utilisateurs de découvrir et explorer différents parcs et attractions. L'application propose une interface utilisateur moderne avec une navigation par onglets.
-
-## Fonctionnalités
-
-L'application comprend quatre sections principales :
-
-- **Parks** : Découverte et exploration des parcs
-- **Ride** : Gestion des attractions et manèges
-- **Stats** : Statistiques et analyses
-- **Search** : Recherche dans l'application
+Application iOS pour explorer les parcs et les parcours de vélo.
 
 ## Architecture
 
-L'application utilise SwiftUI et suit une architecture modulaire :
+L'application suit une architecture MVVM (Model-View-ViewModel) avec une séparation claire des responsabilités et une organisation modulaire.
 
-- `RideXplorersApp.swift` : Point d'entrée de l'application
-- `ContentView.swift` : Vue principale qui gère la navigation
-- `TabBarView.swift` : Navigation par onglets avec persistance de l'état
-- `PageView.swift` : Composant réutilisable pour les pages avec en-tête
-- `HeaderView.swift` : En-tête standard avec titre et bouton profil
-
-## Structure du projet
+## Structure du Projet
 
 ```
 RideXplorers/
-├── RideXplorers/
-│   ├── RideXplorersApp.swift
-│   ├── ContentView.swift
-│   ├── TabBarView.swift
-│   ├── PageView.swift
-│   ├── HeaderView.swift
-│   ├── ParksView.swift
-│   ├── RideView.swift
-│   ├── StatsView.swift
-│   ├── SearchView.swift
-│   └── Assets.xcassets/
-├── RideXplorersTests/
-└── RideXplorersUITests/
+├── App/                           # Point d'entrée de l'application
+│   ├── RideXplorersApp.swift     # Configuration principale de l'app
+│   └── ContentView.swift         # Vue racine de l'application
+├── Features/                      # Fonctionnalités de l'application
+│   ├── Parks/                    # Module des parcs
+│   │   ├── ParksView.swift       # Vue principale des parcs
+│   │   └── NewsSliderView.swift  # Carrousel des actualités
+│   ├── Ride/                     # Module des parcours
+│   │   └── RideView.swift        # Vue des parcours
+│   ├── Stats/                    # Module des statistiques
+│   │   └── StatsView.swift       # Vue des statistiques
+│   └── Search/                   # Module de recherche
+│       └── SearchView.swift      # Vue de recherche
+├── Models/                        # Modèles de données
+│   └── NewsModels.swift          # Modèles pour les actualités
+├── Services/                      # Couche de services
+│   └── NewsService.swift         # Service pour récupérer les actualités
+├── UI/                           # Composants d'interface réutilisables
+│   ├── TabBarView.swift          # Barre de navigation par onglets
+│   ├── PageView.swift            # Layout de page avec en-tête
+│   └── HeaderView.swift          # Composant d'en-tête
+├── Shared/                       # Ressources partagées
+└── Assets.xcassets/              # Ressources graphiques
 ```
 
-## Technologies utilisées
+## Organisation des Couches
 
-- **SwiftUI** : Framework UI moderne d'Apple
-- **iOS** : Plateforme cible
-- **Xcode** : Environnement de développement
+### App Layer
+- **RideXplorersApp.swift** : Point d'entrée principal de l'application
+- **ContentView.swift** : Vue racine qui orchestre la navigation
 
-## Développement
+### Features Layer
+Chaque fonctionnalité est organisée dans son propre module :
+- **Parks** : Gestion des parcs et actualités
+- **Ride** : Gestion des parcours de vélo
+- **Stats** : Affichage des statistiques
+- **Search** : Fonctionnalité de recherche
 
-Créé par Alexis JUILLARD le 24/08/2025.
+### Models Layer
+- **NewsModels.swift** : Définition des structures de données pour les actualités
 
-## Installation
+### Services Layer
+- **NewsService.swift** : Service pour récupérer les données des actualités depuis l'API
 
-1. Clonez le dépôt
-2. Ouvrez le projet dans Xcode
-3. Compilez et exécutez sur un simulateur ou appareil iOS
+### UI Layer
+- **TabBarView.swift** : Navigation principale par onglets
+- **PageView.swift** : Layout réutilisable pour les pages
+- **HeaderView.swift** : En-tête standardisé des pages
 
-## Tests
+## Principes d'Architecture
 
-Le projet inclut des tests unitaires et des tests d'interface utilisateur dans les dossiers respectifs.
+1. **Séparation des Responsabilités** : Chaque composant a une responsabilité unique et bien définie
+2. **Modularité** : Les fonctionnalités sont organisées en modules indépendants
+3. **Réutilisabilité** : Les composants UI sont conçus pour être réutilisés
+4. **Testabilité** : L'architecture facilite l'écriture de tests unitaires
+5. **Maintenabilité** : Code organisé et facile à maintenir
+
+## Technologies Utilisées
+
+- **SwiftUI** : Framework moderne d'interface utilisateur
+- **Swift Concurrency** : Gestion asynchrone des données
+- **MVVM Pattern** : Architecture de présentation
+- **URLSession** : Gestion des appels réseau
+
+## Démarrage Rapide
+
+1. Ouvrir le projet dans Xcode
+2. Sélectionner un simulateur iOS
+3. Compiler et exécuter l'application
+
+## Structure des Données
+
+L'application utilise une API REST pour récupérer les actualités des parcs. Les données sont structurées selon le modèle `NewsItem` qui contient :
+- Informations sur le parc
+- Détails de la randonnée
+- Images et descriptions
+- Métadonnées de localisation
