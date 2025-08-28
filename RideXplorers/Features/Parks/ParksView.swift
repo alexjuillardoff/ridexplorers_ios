@@ -6,7 +6,9 @@ struct ParksView: View {
             VStack(spacing: 0) {
                 NewsSliderView()
                     .padding(.top, -20)
-                Spacer()
+                NearbyParksListView()
+                    .padding(.top, 8)
+                Spacer(minLength: 0)
             }
         }
     }
