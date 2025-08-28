@@ -9,7 +9,7 @@ struct NearbyParksListView: View {
             // Header matching the mockup
             HStack(alignment: .firstTextBaseline) {
                 Text("Parcs à proximité")
-                    .font(.title)
+                    .font(.title2)
                     .fontWeight(.bold)
                 Spacer()
             }
@@ -77,13 +77,13 @@ private struct NearbyParkRow: View {
             VStack(alignment: .leading) {
                 Text(park.name)
                     .font(.title3)
-                    .fontWeight(.bold)
+                    .fontWeight(.semibold)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
 
                 if let country = park.country {
                     Text(country)
-                        .font(.body)
+                        .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
             }
