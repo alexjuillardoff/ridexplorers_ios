@@ -1,11 +1,12 @@
 ---
 alwaysApply: true
 ---
+
 # Objectif
 
-Tu es l’IA du projet iOS.  
-Ton rôle est de générer du code Swift fiable, idiomatique et compilable, de proposer des refactorings sûrs, et d’expliquer clairement tes choix quand c’est utile.  
-Ces règles sont permanentes et s’appliquent à tout le code, quelles que soient les évolutions du projet.
+Tu es l'IA du projet iOS.  
+Ton rôle est de générer du code Swift fiable, idiomatique et compilable, de proposer des refactorings sûrs, et d'expliquer clairement tes choix quand c'est utile.  
+Ces règles sont permanentes et s'appliquent à tout le code, quelles que soient les évolutions du projet.
 
 # Pile technique
 
@@ -23,7 +24,7 @@ Ces règles sont permanentes et s’appliquent à tout le code, quelles que soie
   - `Models/` pour les modèles de données
   - `Services/` pour la logique réseau/persistance
   - `UI/` pour les composants visuels réutilisables
-- Vue: logique d’affichage uniquement  
+- Vue: logique d'affichage uniquement  
 - ViewModel: état + appels aux services  
 - Services: accès réseau, persistance, logique métier  
 - Injection de dépendances via protocoles et initialisateurs (pas de singletons globaux)
@@ -32,7 +33,7 @@ Ces règles sont permanentes et s’appliquent à tout le code, quelles que soie
 
 - Swift 5.x idiomatique
 - Types en UpperCamelCase, variables/fonctions en lowerCamelCase
-- Préférence aux `struct` et `enum` plutôt que `class` sauf besoin d’héritage
+- Préférence aux `struct` et `enum` plutôt que `class` sauf besoin d'héritage
 - Erreurs via `enum` conformes à `Error`, jamais de force unwrap ou `try!`
 - Logs avec `os.Logger`, pas de `print` en production
 
@@ -43,7 +44,7 @@ Ces règles sont permanentes et s’appliquent à tout le code, quelles que soie
 - Utiliser `Task`/`await` plutôt que GCD direct
 
 # UI & Design system
-`
+
 - Vues petites, composables et testables
 - Utiliser des composants réutilisables pour la cohérence visuelle
 - Accessibilité: ajouter systématiquement `accessibilityLabel` et VoiceOver
@@ -51,7 +52,7 @@ Ces règles sont permanentes et s’appliquent à tout le code, quelles que soie
 # Sécurité
 
 - Aucun secret dans le code
-- Configurations sensibles dans `.xcconfig` ou variables d’environnement
+- Configurations sensibles dans `.xcconfig` ou variables d'environnement
 - App Transport Security activé par défaut
 
 # Règles Cursor
@@ -65,6 +66,15 @@ Quand tu génères du code:
 
 - Suivre Conventional Commits: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `build:`
 
+# Test de build
+
+- Tester systématiquement la compilation avec la commande :
+  ```bash
+  /Applications/Xcode-beta.app/Contents/Developer/usr/bin/xcodebuild -project RideXplorers.xcodeproj -scheme RideXplorers -destination 'platform=iOS Simulator,id=C18ACE03-B205-4595-8399-CBBEB5F3E9CB' build
+  ```
+- Vérifier que le projet compile sans erreurs avant de proposer des modifications
+- En cas d'erreur de compilation, corriger le code avant de continuer
+
 # Exceptions
 
-- Si une règle doit être contournée (contexte technique, contrainte produit), expliquer la raison, l’impact et proposer une alternative documentée.
+- Si une règle doit être contournée (contexte technique, contrainte produit), expliquer la raison, l'impact et proposer une alternative documentée.

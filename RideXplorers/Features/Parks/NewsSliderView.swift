@@ -1,16 +1,30 @@
 import SwiftUI
 
+fileprivate enum NewsSliderConstants {
+    static let autoSlideInterval: TimeInterval = 7
+    static let cardHeight: CGFloat = 360
+    static let imageHeight: CGFloat = 200
+}
+
 struct NewsSliderView: View {
-    @StateObject private var newsService = NewsService.shared
+    @ObservedObject private var newsService = NewsService.shared
     @State private var currentIndex: Int = 0
-    private let autoSlideTimer = Timer.publish(every: 7, on: .main, in: .common).autoconnect()
+    @State private var selectedNewsItem: NewsItem?
+
+    private enum Constants {
+        static let autoSlideInterval: TimeInterval = 7
+        static let cardHeight: CGFloat = 360
+        static let imageHeight: CGFloat = 200
+    }
+
+    private let autoSlideTimer = Timer.publish(every: NewsSliderConstants.autoSlideInterval, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if newsService.isLoading {
+            if newsService.shouldShowLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity)
-            } else if newsService.visibleNewsItems.isEmpty {
+            } else if !newsService.hasData {
                 Text("Pas de news disponible")
                     .font(.footnote)
                     .foregroundColor(.secondary)
@@ -18,50 +32,58 @@ struct NewsSliderView: View {
                 GeometryReader { geo in
                     TabView(selection: $currentIndex) {
                         ForEach(Array(newsService.visibleNewsItems.enumerated()), id: \.offset) { index, item in
-                            NewsCard(item: item)
-                                .frame(width: geo.size.width)
-                                .tag(index)
+                            NewsCard(item: item) {
+                                selectedNewsItem = item
+                            }
+                            .frame(width: geo.size.width)
+                            .tag(index)
                         }
                     }
                     .tabViewStyle(.page(indexDisplayMode: .automatic))
                     .frame(width: geo.size.width, height: geo.size.height)
                     .onReceive(autoSlideTimer) { _ in
-                        guard !newsService.visibleNewsItems.isEmpty else { return }
+                        // Pause auto-slide when a detail view is open
+                        guard selectedNewsItem == nil else { return }
+                        guard newsService.visibleNewsItems.count > 1 else { return }
                         withAnimation(.easeInOut) {
                             currentIndex = (currentIndex + 1) % newsService.visibleNewsItems.count
                         }
                     }
+                    .onChange(of: newsService.visibleNewsItems.count) { _, newCount in
+                        if newCount == 0 { currentIndex = 0 }
+                        else if currentIndex >= newCount { currentIndex = 0 }
+                    }
                 }
-                .frame(height: 360)
+                .frame(height: NewsSliderConstants.cardHeight)
             }
         }
         .task {
-            // Charger les news au démarrage
-            await newsService.fetchNews()
+            if !newsService.hasData { await newsService.fetchNews() }
         }
         .refreshable {
             // Permettre le pull-to-refresh manuel
             await newsService.forceRefresh()
         }
-        .onAppear {
-            // Plus besoin de logique de filtrage ici
+        .sheet(item: $selectedNewsItem) { item in
+            NewsDetailView(newsItem: item)
         }
     }
 }
 
 private struct NewsCard: View {
     let item: NewsItem
+    let onTap: () -> Void
 
     var body: some View {
         VStack(alignment: .leading) {
             // Headline (blue, all caps)
-            Text(item.main_news.uppercased())
+            Text(item.headline.uppercased())
                 .font(.caption)
                 .fontWeight(.heavy)
                 .foregroundColor(.blue)
 
             // Park title
-            Text(item.parks)
+            Text(item.park)
                 .font(.title3)
                 .fontWeight(.bold)
                 .fixedSize(horizontal: false, vertical: true)
@@ -74,9 +96,9 @@ private struct NewsCard: View {
 
             // Image with gradient and bottom information
             ZStack(alignment: .bottomLeading) {
-                let imageHeight: CGFloat = 200
+                let imageHeight: CGFloat = NewsSliderConstants.imageHeight
                 Group {
-                    if let urlString = item.pictures, let url = URL(string: urlString) {
+                    if let urlString = item.imageURL, let url = URL(string: urlString) {
                         AsyncImage(url: url) { phase in
                             switch phase {
                             case .empty:
@@ -110,11 +132,11 @@ private struct NewsCard: View {
 
                 // Bottom text on top of gradient
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(item.ride)
+                    Text(item.rideName)
                         .font(.title2)
                         .fontWeight(.semibold)
                         .foregroundColor(.white)
-                    Text(item.description)
+                    Text(item.summary)
                         .font(.subheadline)
                         .lineLimit(2)
                         .truncationMode(.tail)
@@ -130,6 +152,9 @@ private struct NewsCard: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1))
         )
+        .onTapGesture {
+            onTap()
+        }
     }
 }
 

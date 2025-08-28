@@ -4,9 +4,9 @@ final class NewsService: ObservableObject {
     static let shared = NewsService()
     
     @Published var newsItems: [NewsItem] = []
-    @Published var visibleNewsItems: [NewsItem] = []
     @Published var isLoading = false
     @Published var lastUpdateTime: Date?
+    @Published var isInitialized = false
     
     private let url = URL(string: "https://free.alexjuillard.fr:8000/blog/news")!
     private let cacheKey = "cached_news"
@@ -18,6 +18,13 @@ final class NewsService: ObservableObject {
     private init() {
         loadCachedNews()
         startAutoRefresh()
+        
+        // Charger les données immédiatement si pas de cache
+        if visibleNewsItems.isEmpty {
+            Task {
+                await fetchNews()
+            }
+        }
     }
     
     deinit {
@@ -30,7 +37,7 @@ final class NewsService: ObservableObject {
         if let data = UserDefaults.standard.data(forKey: cacheKey),
            let cachedNews = try? JSONDecoder().decode([NewsItem].self, from: data) {
             self.newsItems = cachedNews
-            self.visibleNewsItems = cachedNews.filter { $0.visible }
+            self.isInitialized = true
         }
         
         if let lastUpdate = UserDefaults.standard.object(forKey: lastUpdateKey) as? Date {
@@ -87,8 +94,8 @@ final class NewsService: ObservableObject {
             
             await MainActor.run {
                 self.newsItems = news
-                self.visibleNewsItems = news.filter { $0.visible }
                 self.isLoading = false
+                self.isInitialized = true
                 self.saveToCache(news)
             }
         } catch {
@@ -114,5 +121,20 @@ final class NewsService: ObservableObject {
         guard let lastUpdate = lastUpdateTime else { return 0 }
         let elapsed = Date().timeIntervalSince(lastUpdate)
         return max(0, refreshInterval - elapsed)
+    }
+    
+    // MARK: - Data Availability
+    
+    var hasData: Bool {
+        return !visibleNewsItems.isEmpty && isInitialized
+    }
+    
+    var shouldShowLoading: Bool {
+        return isLoading && visibleNewsItems.isEmpty
+    }
+
+    // Derived data
+    var visibleNewsItems: [NewsItem] {
+        newsItems.filter { $0.visible }
     }
 }
