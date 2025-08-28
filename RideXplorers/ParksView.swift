@@ -3,6 +3,7 @@ import SwiftUI
 struct ParksView: View {
     var body: some View {
         PageView(title: "Parks") {
+            NewsSliderView()
             Spacer()
         }
     }

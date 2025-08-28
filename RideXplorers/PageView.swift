@@ -10,7 +10,7 @@ struct PageView<Content: View>: View {
     }
     
     var body: some View {
-        VStack {
+        VStack(spacing: -20) {
             HeaderView(title: title)
             content
         }
