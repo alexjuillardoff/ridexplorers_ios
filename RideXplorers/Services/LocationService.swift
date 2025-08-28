@@ -37,7 +37,8 @@ final class LocationService: NSObject, ObservableObject, LocationProviding {
     }
 }
 
-extension LocationService: CLLocationManagerDelegate {
+@MainActor
+extension LocationService: @preconcurrency CLLocationManagerDelegate {
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         authorizationStatus = manager.authorizationStatus
         if authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways {
@@ -56,5 +57,3 @@ extension LocationService: CLLocationManagerDelegate {
         continuation = nil
     }
 }
-
-
