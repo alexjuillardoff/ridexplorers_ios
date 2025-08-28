@@ -1,29 +1,23 @@
 import SwiftUI
 
 struct NewsSliderView: View {
-    @State private var newsItems: [NewsItem] = []
-    @State private var isLoading: Bool = false
-    @State private var errorMessage: String?
+    @StateObject private var newsService = NewsService.shared
     @State private var currentIndex: Int = 0
     private let autoSlideTimer = Timer.publish(every: 7, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if isLoading {
+            if newsService.isLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity)
-            } else if let errorMessage = errorMessage {
-                Text(errorMessage)
-                    .foregroundColor(.red)
-                    .font(.footnote)
-            } else if newsItems.isEmpty {
+            } else if newsService.visibleNewsItems.isEmpty {
                 Text("Pas de news disponible")
                     .font(.footnote)
                     .foregroundColor(.secondary)
             } else {
                 GeometryReader { geo in
                     TabView(selection: $currentIndex) {
-                        ForEach(Array(newsItems.enumerated()), id: \.offset) { index, item in
+                        ForEach(Array(newsService.visibleNewsItems.enumerated()), id: \.offset) { index, item in
                             NewsCard(item: item)
                                 .frame(width: geo.size.width)
                                 .tag(index)
@@ -32,33 +26,25 @@ struct NewsSliderView: View {
                     .tabViewStyle(.page(indexDisplayMode: .automatic))
                     .frame(width: geo.size.width, height: geo.size.height)
                     .onReceive(autoSlideTimer) { _ in
-                        guard !newsItems.isEmpty else { return }
+                        guard !newsService.visibleNewsItems.isEmpty else { return }
                         withAnimation(.easeInOut) {
-                            currentIndex = (currentIndex + 1) % newsItems.count
+                            currentIndex = (currentIndex + 1) % newsService.visibleNewsItems.count
                         }
                     }
                 }
                 .frame(height: 360)
             }
         }
-        .task(loadNews)
-    }
-
-    private func loadNews() async {
-        guard !isLoading else { return }
-        isLoading = true
-        errorMessage = nil
-        do {
-            let items = try await NewsService.shared.fetchNews()
-            await MainActor.run {
-                self.newsItems = items.filter { $0.visible }
-                self.isLoading = false
-            }
-        } catch {
-            await MainActor.run {
-                self.errorMessage = "Erreur lors du chargement des news."
-                self.isLoading = false
-            }
+        .task {
+            // Charger les news au démarrage
+            await newsService.fetchNews()
+        }
+        .refreshable {
+            // Permettre le pull-to-refresh manuel
+            await newsService.forceRefresh()
+        }
+        .onAppear {
+            // Plus besoin de logique de filtrage ici
         }
     }
 }

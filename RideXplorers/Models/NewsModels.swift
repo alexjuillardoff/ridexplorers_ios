@@ -1,6 +1,6 @@
 import Foundation
 
-struct NewsItem: Identifiable, Decodable {
+struct NewsItem: Identifiable, Decodable, Encodable, Equatable {
     let id: Int
     let visible: Bool
     let main_news: String
