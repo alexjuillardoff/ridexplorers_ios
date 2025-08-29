@@ -75,12 +75,44 @@ struct NearbyParksListView: View {
 
 private struct NearbyParkRow: View {
     let park: NearbyPark
+    @State private var imageURL: URL?
+    @State private var isLoadingImage = false
 
     var body: some View {
         HStack(spacing: 16) {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.gray.opacity(0.15))
-                .frame(width: 50, height: 50)
+            ZStack {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.gray.opacity(0.15))
+
+                if let url = imageURL {
+                    if url.isFileURL, let img = UIImage(contentsOfFile: url.path) {
+                        Image(uiImage: img)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .empty:
+                                Color.clear
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            case .failure:
+                                Image(systemName: "photo").foregroundColor(.secondary)
+                            @unknown default:
+                                Color.clear
+                            }
+                        }
+                    }
+                } else {
+                    Image(systemName: "photo").foregroundColor(.secondary).opacity(0.6)
+                }
+            }
+            .frame(width: 50, height: 50)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
 
             VStack(alignment: .leading) {
                 Text(park.name)
@@ -99,8 +131,17 @@ private struct NearbyParkRow: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(park.country != nil ? "\(park.name), \(park.country!)" : park.name)
+        .task(id: park.id) {
+            // Load main picture once; uses disk cache afterwards
+            guard imageURL == nil, !isLoadingImage else { return }
+            isLoadingImage = true
+            defer { isLoadingImage = false }
+            let url = await ImageCacheService.shared.localMainImageURL(for: park.name)
+            if let url { imageURL = url }
+        }
     }
 }
+
 
 // MARK: - UIKit-based Pager with Peek (iOS 16+)
 @available(iOS 16.0, *)
