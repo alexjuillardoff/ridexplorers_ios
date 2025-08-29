@@ -80,10 +80,7 @@ private struct NearbyParkRow: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.gray.opacity(0.15))
-
+            ZStack(alignment: .center) {
                 if let url = imageURL {
                     if url.isFileURL, let img = UIImage(contentsOfFile: url.path) {
                         Image(uiImage: img)
@@ -93,22 +90,30 @@ private struct NearbyParkRow: View {
                     } else {
                         AsyncImage(url: url) { phase in
                             switch phase {
-                            case .empty:
-                                Color.clear
                             case .success(let image):
                                 image
                                     .resizable()
                                     .scaledToFill()
                                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            case .failure:
-                                Image(systemName: "photo").foregroundColor(.secondary)
-                            @unknown default:
-                                Color.clear
+                            default:
+                                // Loading or failure: show placeholder
+                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                    .fill(placeholderColor(for: park))
+                                Text(initials(from: park.name))
+                                    .font(.system(size: 18, weight: .heavy))
+                                    .foregroundColor(.white)
+                                    .opacity(0.85)
                             }
                         }
                     }
                 } else {
-                    Image(systemName: "photo").foregroundColor(.secondary).opacity(0.6)
+                    // No image URL: placeholder
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(placeholderColor(for: park))
+                    Text(initials(from: park.name))
+                        .font(.system(size: 18, weight: .heavy))
+                        .foregroundColor(.white)
+                        .opacity(0.85)
                 }
             }
             .frame(width: 50, height: 50)
@@ -128,7 +133,17 @@ private struct NearbyParkRow: View {
                 }
             }
             Spacer(minLength: 0)
+            if let distanceText = formattedDistanceKM() {
+                Text(distanceText)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .padding(.trailing, 12)
+                    .accessibilityLabel("Distance \(distanceText)")
+            }
         }
+        // Ensure each row has a consistent minimum height even if the
+        // name wraps to 2 lines, keeping page heights uniform.
+        .frame(minHeight: 60, alignment: .center)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(park.country != nil ? "\(park.name), \(park.country!)" : park.name)
         .task(id: park.id) {
@@ -139,6 +154,48 @@ private struct NearbyParkRow: View {
             let url = await ImageCacheService.shared.localMainImageURL(for: park.name)
             if let url { imageURL = url }
         }
+    }
+
+    private func formattedDistanceKM() -> String? {
+        let meters = park.distanceMeters
+        guard meters.isFinite && meters >= 0 else { return nil }
+        let km = meters / 1000.0
+        return String(format: "%.1f km", km)
+    }
+
+    private func initials(from name: String) -> String {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty { return "?" }
+
+        // Split by non-alphanumeric separators to get words
+        let parts = trimmed.split { !$0.isLetter && !$0.isNumber }.map { String($0) }
+        if parts.count >= 2 {
+            let first = parts[0].first.map { String($0).uppercased() } ?? ""
+            let second = parts[1].first.map { String($0).uppercased() } ?? ""
+            let result = (first + second)
+            return String(result.prefix(2))
+        }
+
+        // Single token: attempt to extract from CamelCase (e.g. PanoraMagique -> PM)
+        let uppers = trimmed.filter { $0.isUppercase }
+        if uppers.count >= 2 {
+            let firstTwo = uppers.prefix(2)
+            return String(firstTwo)
+        }
+
+        // Fallback: first two letters uppercased
+        let letters = trimmed.filter { $0.isLetter || $0.isNumber }
+        if letters.isEmpty { return "?" }
+        return String(letters.prefix(2)).uppercased()
+    }
+
+    private func placeholderColor(for park: NearbyPark) -> Color {
+        // Stable color based on park id
+        let palette: [Color] = [
+            .blue, .orange, .green, .purple, .pink, .teal, .indigo, .red, .yellow
+        ]
+        let idx = abs(park.id) % max(palette.count, 1)
+        return palette[idx]
     }
 }
 
@@ -183,13 +240,13 @@ private struct ParksPeekPager: UIViewRepresentable {
 
             let itemSize = NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1.0),
-                heightDimension: .estimated(360)
+                heightDimension: .absolute(360)
             )
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
 
             let groupSize = NSCollectionLayoutSize(
                 widthDimension: .absolute(max(containerWidth - leading - trailingEffective, 0)),
-                heightDimension: .estimated(360)
+                heightDimension: .absolute(360)
             )
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
 

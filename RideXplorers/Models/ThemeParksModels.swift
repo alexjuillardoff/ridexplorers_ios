@@ -21,3 +21,23 @@ struct ThemeParkPicture: Decodable, Equatable {
     let copyName: String?
     let copyDate: String?
 }
+
+// MARK: - Full list endpoint models (/api/theme-parks)
+
+struct ThemeParksListResponse: Decodable {
+    let data: [ThemeParksRecord]
+}
+
+struct ThemeParksRecord: Decodable, Equatable {
+    let id: Int
+    let name: String
+    let city: String?
+    let state: String?
+    let country: String?
+    let coords: ThemeParksCoords?
+}
+
+struct ThemeParksCoords: Decodable, Equatable {
+    let lat: String?
+    let lng: String?
+}

@@ -7,7 +7,7 @@ struct ParksView: View {
                 NewsSliderView()
                     .padding(.top, -20)
                 NearbyParksListView()
-                    .padding(.top, 8)
+                    .padding(.top, -20)
                 Spacer(minLength: 0)
             }
         }
