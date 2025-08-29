@@ -1,5 +1,6 @@
 import Foundation
 
+/// Élément de news affiché dans le carrousel et la fiche détaillée.
 struct NewsItem: Identifiable, Decodable, Encodable, Equatable {
     let id: Int
     let visible: Bool

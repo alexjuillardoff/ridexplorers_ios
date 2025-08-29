@@ -1,5 +1,6 @@
 import Foundation
 
+/// Cache en mémoire (acteur) pour mémoriser les URLs d’images par nom de parc.
 actor ThemeParksImageCache {
     private var map: [String: URL] = [:]
 
@@ -7,6 +8,8 @@ actor ThemeParksImageCache {
     func set(_ url: URL, for key: String) { map[key] = url }
 }
 
+/// Service réseau pour interroger l’API ThemeParks et construire
+/// des URLs d’images (absolues) à partir des résultats.
 final class ThemeParksService {
     static let shared = ThemeParksService()
 
@@ -16,7 +19,7 @@ final class ThemeParksService {
 
     private init() {}
 
-    // Public: returns first image URL
+    /// Retourne l’URL de la première image (principale) pour un parc.
     func mainPictureURL(for parkName: String) async throws -> URL? {
         if let cached = await cache.value(for: normalizedKey(parkName)) { return cached }
         let parks = try await searchThemeParks(query: parkName)
@@ -27,7 +30,7 @@ final class ThemeParksService {
         return url
     }
 
-    // Public: returns up to `limit` image URLs (main + others)
+    /// Retourne jusqu’à `limit` URLs d’images (principale + autres) pour un parc.
     func pictureURLs(for parkName: String, limit: Int = 3) async throws -> [URL] {
         let parks = try await searchThemeParks(query: parkName)
         guard !parks.isEmpty else { return [] }
@@ -53,6 +56,7 @@ final class ThemeParksService {
     }
 
     // MARK: - Networking
+    /// Interroge l’endpoint de recherche ThemeParks avec la requête donnée.
     private func searchThemeParks(query: String) async throws -> [ThemePark] {
         guard var components = URLComponents(url: baseSearchURL, resolvingAgainstBaseURL: false) else { return [] }
         components.queryItems = [URLQueryItem(name: "q", value: query)]
@@ -65,12 +69,15 @@ final class ThemeParksService {
     }
 
     // MARK: - Matching helpers
+    /// Construit une URL absolue à partir d’un chemin ou d’une URL potentiellement relative.
     private func buildImageURL(from pathOrURL: String) -> URL? {
         if let absolute = URL(string: pathOrURL), absolute.scheme != nil { return absolute }
         let trimmed = pathOrURL.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
         return rcdbBase.appendingPathComponent(trimmed)
     }
 
+    /// Sélectionne le meilleur match parmi les candidats en combinant exactitude,
+    /// inclusion de tokens, Jaccard et Levenshtein.
     private func bestMatch(for query: String, in parks: [ThemePark]) -> ThemePark {
         // If an exact case-insensitive match exists, use it
         if let exact = parks.first(where: { $0.name.caseInsensitiveCompare(query) == .orderedSame }) {
@@ -105,6 +112,8 @@ final class ThemeParksService {
         normalize(s)
     }
 
+    /// Normalise une chaîne pour comparaisons: suppression d’accents/casse, découpage,
+    /// suppression des stopwords, puis jonction par espace.
     private func normalize(_ s: String) -> String {
         let folded = s.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "en_US_POSIX"))
         let replacedSeparators = folded.replacingOccurrences(of: "[\\p{Punct}]+", with: " ", options: .regularExpression)
@@ -115,10 +124,12 @@ final class ThemeParksService {
         return tokens.joined(separator: " ")
     }
 
+    /// Transforme une chaîne normalisée en ensemble de tokens.
     private func tokenSet(_ s: String) -> Set<String> {
         Set(normalize(s).split(separator: " ").map(String.init))
     }
 
+    /// Similarité de Jaccard entre deux ensembles de tokens.
     private func jaccard(_ a: Set<String>, _ b: Set<String>) -> Double {
         if a.isEmpty && b.isEmpty { return 1.0 }
         let inter = a.intersection(b).count
@@ -126,6 +137,7 @@ final class ThemeParksService {
         return uni == 0 ? 0 : Double(inter) / Double(uni)
     }
 
+    /// Ratio de similarité basé sur la distance de Levenshtein.
     private func levenshteinRatio(_ a: String, _ b: String) -> Double {
         let s1 = normalize(a)
         let s2 = normalize(b)
@@ -136,6 +148,7 @@ final class ThemeParksService {
         return 1.0 - Double(d) / Double(maxLen)
     }
 
+    /// Score fuzzy combinant Jaccard et Levenshtein (pondération 65/35).
     private func fuzzyScore(between a: String, and b: String) -> Double {
         let tsA = tokenSet(a)
         let tsB = tokenSet(b)
@@ -145,6 +158,7 @@ final class ThemeParksService {
         return 0.65 * j + 0.35 * l
     }
 
+    /// Distance de Levenshtein entre deux chaînes.
     private func levenshteinDistance(_ aStr: String, _ bStr: String) -> Int {
         let a = Array(aStr)
         let b = Array(bStr)

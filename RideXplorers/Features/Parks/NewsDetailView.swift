@@ -1,9 +1,12 @@
 import SwiftUI
 
 struct NewsDetailView: View {
+    /// Élément de news présenté en détail.
     let newsItem: NewsItem
     @Environment(\.dismiss) private var dismiss
+    /// Données d’image préchargées pour un affichage fluide.
     @State private var imageData: Data?
+    /// Indicateur d’état de chargement initial de la vue.
     @State private var isLoading = true
     
     var body: some View {
@@ -179,7 +182,7 @@ struct NewsDetailView: View {
         }
     }
     
-    // Fonction de préchargement d'image optimisée
+    /// Précharge l’image distante et stocke les données pour accélérer l’affichage.
     private func preloadImage(from url: URL) async {
         do {
             let (data, _) = try await URLSession.shared.data(from: url)

@@ -1,9 +1,13 @@
 import Foundation
 
 protocol ParksProviding {
+    /// Récupère une liste de parcs depuis les sources disponibles.
+    /// Peut combiner plusieurs APIs et dédupliquer les résultats.
     func fetchParks() async throws -> [QueueTimesPark]
 }
 
+/// Service de récupération des parcs depuis Queue-Times et ThemeParks API,
+/// avec fusion et déduplication par nom/proximité.
 struct ParksService: ParksProviding {
     private let parksURL = AppConfig.Endpoints.queueTimesParksURL
     private let themeParksURL = AppConfig.Endpoints.themeParksBaseURL
@@ -20,6 +24,7 @@ struct ParksService: ParksProviding {
     }
 
     // MARK: - Private helpers
+    /// Télécharge et tente de décoder la liste des parcs depuis Queue-Times.
     private func fetchFromQueueTimesAPI() async throws -> [QueueTimesPark] {
         let (data, response) = try await URLSession.shared.data(from: parksURL)
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
@@ -45,6 +50,7 @@ struct ParksService: ParksProviding {
         return []
     }
 
+    /// Télécharge et mappe la liste des parcs depuis ThemeParks API.
     private func fetchFromThemeParksAPI() async throws -> [QueueTimesPark] {
         let (data, response) = try await URLSession.shared.data(from: themeParksURL)
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
@@ -72,6 +78,7 @@ struct ParksService: ParksProviding {
         return mapped
     }
 
+    /// Déduplique la liste par normalisation du nom et proximité géographique (~1km).
     private func deduplicateParks(_ parks: [QueueTimesPark]) -> [QueueTimesPark] {
         // Combine by normalized name (ignoring generic suffixes) and cluster by proximity
         // to merge entries that refer to the same physical park within ~1km.

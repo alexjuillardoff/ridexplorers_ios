@@ -1,16 +1,23 @@
 import SwiftUI
 
 private enum NewsSliderConstants {
+    /// Intervalle d’auto-défilement du carrousel.
     static let autoSlideInterval: TimeInterval = AppConfig.UI.autoSlideInterval
+    /// Hauteur totale d’une carte de news.
     static let cardHeight: CGFloat = AppConfig.UI.sliderCardHeight
+    /// Hauteur de l’image dans la carte.
     static let imageHeight: CGFloat = AppConfig.UI.sliderImageHeight
 }
 
 struct NewsSliderView: View {
+    /// Service des news injecté via l’environnement.
     @EnvironmentObject private var newsService: NewsService
+    /// Index courant dans le `TabView` paginé.
     @State private var currentIndex: Int = 0
+    /// Élément sélectionné ouvrant la fiche détaillée.
     @State private var selectedNewsItem: NewsItem?
 
+    /// Timer pour l’auto-défilement.
     private let autoSlideTimer = Timer.publish(every: NewsSliderConstants.autoSlideInterval, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -36,7 +43,7 @@ struct NewsSliderView: View {
                     .tabViewStyle(.page(indexDisplayMode: .automatic))
                     .frame(width: geo.size.width, height: geo.size.height)
                     .onReceive(autoSlideTimer) { _ in
-                        // Pause auto-slide when a detail view is open
+                        // Met en pause l’auto-défilement si une fiche est ouverte
                         guard selectedNewsItem == nil else { return }
                         guard newsService.visibleNewsItems.count > 1 else { return }
                         withAnimation(.easeInOut) {
@@ -65,7 +72,9 @@ struct NewsSliderView: View {
 }
 
 private struct NewsCard: View {
+    /// Élément de news à afficher.
     let item: NewsItem
+    /// Callback déclenché au toucher de la carte.
     let onTap: () -> Void
 
     var body: some View {

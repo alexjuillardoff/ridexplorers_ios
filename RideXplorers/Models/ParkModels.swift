@@ -1,10 +1,14 @@
 import Foundation
 
+/// Groupe de parcs tel que renvoyé par l’API Queue-Times.
 struct QueueTimesParksGroup: Decodable, Equatable {
+    /// Nom du groupe (ex: pays/continent), parfois `nil`.
     let name: String?
+    /// Liste des parcs dans ce groupe.
     let parks: [QueueTimesPark]
 }
 
+/// Représente un parc (Queue-Times ou mappé depuis ThemeParks API).
 struct QueueTimesPark: Identifiable, Decodable, Equatable {
     let id: Int
     let name: String
@@ -28,6 +32,7 @@ struct QueueTimesPark: Identifiable, Decodable, Equatable {
         case lon
     }
 
+    /// Initialisateur direct (utile lors du mapping depuis d’autres APIs).
     init(id: Int, name: String, slug: String?, latitude: Double, longitude: Double, country: String?, continent: String?) {
         self.id = id
         self.name = name
@@ -38,6 +43,7 @@ struct QueueTimesPark: Identifiable, Decodable, Equatable {
         self.continent = continent
     }
 
+    /// Décodage tolérant pour lat/lng (accepte number ou string, et clés alternatives).
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(Int.self, forKey: .id)
@@ -63,11 +69,11 @@ struct QueueTimesPark: Identifiable, Decodable, Equatable {
     }
 }
 
+/// Entrée de parc enrichie de la distance à l’utilisateur.
 struct NearbyPark: Identifiable, Equatable {
     let id: Int
     let name: String
     let distanceMeters: Double
     let country: String?
 }
-
 

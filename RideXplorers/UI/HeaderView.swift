@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct HeaderView: View {
+    /// Titre principal affiché dans l’en-tête de page.
     let title: String
     
     var body: some View {
@@ -11,7 +12,7 @@ struct HeaderView: View {
                 .foregroundColor(.primary)
             Spacer()
             Button(action: {
-                // Profile action placeholder
+                // Action placeholder: pourrait ouvrir un profil ou un menu.
             }) {
                 Image(systemName: "person.circle.fill")
                     .font(.largeTitle)

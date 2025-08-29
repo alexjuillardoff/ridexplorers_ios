@@ -1,6 +1,8 @@
 import Foundation
 import UIKit
 
+/// Service de cache disque pour images de parcs ThemeParks.
+/// Télécharge, redimensionne (carré) et compresse avant stockage.
 final class ImageCacheService {
     static let shared = ImageCacheService()
 
@@ -15,7 +17,7 @@ final class ImageCacheService {
         try? ensureDirectoryExists()
     }
 
-    // Public: return local file URL for the main image only (download + compress + store if needed)
+    /// Retourne l’URL de fichier local pour l’image principale d’un parc (télécharge si besoin).
     func localMainImageURL(for parkName: String) async -> URL? {
         let key = makeKey(parkName)
         // 1) Existing cached main image
@@ -38,7 +40,7 @@ final class ImageCacheService {
         }
     }
 
-    // Public: returns local file URLs for up to `limit` images for the park
+    /// Retourne une liste d’URLs locales pour jusqu’à `limit` images du parc.
     func localImageURLs(for parkName: String, limit: Int = 4) async -> [URL] {
         let key = makeKey(parkName)
         // 1) Read existing cached files
@@ -70,11 +72,13 @@ final class ImageCacheService {
     }
 
     // MARK: - Internal helpers
+    /// Dossier `Application Support` dédié au cache d’images.
     private func appSupportDirectory() throws -> URL {
         let url = try fileManager.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
         return url.appendingPathComponent(directoryName, isDirectory: true)
     }
 
+    /// Crée le dossier de cache s’il n’existe pas.
     private func ensureDirectoryExists() throws {
         let dir = try appSupportDirectory()
         if !fileManager.fileExists(atPath: dir.path) {
@@ -82,10 +86,12 @@ final class ImageCacheService {
         }
     }
 
+    /// Construit l’URL locale d’une image pour une clé et un index donné.
     private func fileURL(forKey key: String, index: Int) throws -> URL {
         try appSupportDirectory().appendingPathComponent("\(key)-\(index).jpg")
     }
 
+    /// Retourne les fichiers existants pour la clé (jusqu’à `limit`).
     private func existingLocalFiles(forKey key: String, limit: Int) -> [URL] {
         var urls: [URL] = []
         for i in 0..<limit {
@@ -96,12 +102,14 @@ final class ImageCacheService {
         return urls
     }
 
+    /// Écrit les données sur disque de façon atomique et retourne l’URL.
     private func store(data: Data, key: String, index: Int) throws -> URL {
         let url = try fileURL(forKey: key, index: index)
         try data.write(to: url, options: .atomic)
         return url
     }
 
+    /// Normalise un nom de parc en clé de fichier (a-z0-9 et tirets).
     private func makeKey(_ s: String) -> String {
         let folded = s.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "en_US_POSIX"))
         let replaced = folded.replacingOccurrences(of: "[^A-Za-z0-9]+", with: "-", options: .regularExpression)
@@ -110,6 +118,7 @@ final class ImageCacheService {
         return collapsed.lowercased()
     }
 
+    /// Redimensionne l’image en carré et compresse en JPEG.
     private func downscaleAndCompress(image: UIImage) async -> Data {
         // Render a square image (aspect-fill) into targetMaxDimension x targetMaxDimension
         let targetSide = targetMaxDimension

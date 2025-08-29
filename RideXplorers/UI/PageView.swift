@@ -1,7 +1,9 @@
 import SwiftUI
 
 struct PageView<Content: View>: View {
+    /// Titre affiché dans l’en-tête de la page.
     let title: String
+    /// Contenu principal de la page.
     let content: Content
     
     init(title: String, @ViewBuilder content: () -> Content) {

@@ -3,6 +3,7 @@ import CoreGraphics
 
 /// Centralized application configuration (URLs, timings, feature flags).
 enum AppConfig {
+    /// Endpoints réseau de l’application.
     enum Endpoints {
         // Content APIs
         static let newsURL = URL(string: "https://free.alexjuillard.fr:8000/blog/news")!

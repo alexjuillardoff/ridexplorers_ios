@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct ParksView: View {
+    /// Écran d’accueil pour les parcs :
+    /// affiche le carrousel de news puis la liste des parcs proches.
     var body: some View {
         PageView(title: "Parks") {
             VStack(spacing: 0) {

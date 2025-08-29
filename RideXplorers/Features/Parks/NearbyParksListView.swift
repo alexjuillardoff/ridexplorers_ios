@@ -2,7 +2,9 @@ import SwiftUI
 import UIKit
 
 struct NearbyParksListView: View {
+    /// ViewModel responsable de charger et trier les parcs à proximité.
     @StateObject private var viewModel = NearbyParksViewModel()
+    /// Index de page courant (utilisé pour le pager UIKit ou TabView).
     @State private var currentPage: Int = 0
     // For iOS 17 ScrollView paging with scrollPosition (expects Optional<some Hashable>)
     @State private var currentPageID: Int? = 0
@@ -68,6 +70,7 @@ struct NearbyParksListView: View {
 }
 
 private struct NearbyParkRow: View {
+    /// Données d’un parc proche à afficher dans une ligne.
     let park: NearbyPark
     @State private var imageURL: URL?
     @State private var isLoadingImage = false
@@ -150,6 +153,8 @@ private struct NearbyParkRow: View {
         }
     }
 
+    /// Retourne la distance formatée en kilomètres (ex: "2.3 km"),
+    /// ou `nil` si la distance est invalide.
     private func formattedDistanceKM() -> String? {
         let meters = park.distanceMeters
         guard meters.isFinite && meters >= 0 else { return nil }
@@ -157,6 +162,9 @@ private struct NearbyParkRow: View {
         return String(format: "%.1f km", km)
     }
 
+    /// Génère des initiales pour un placeholder d’image à partir du nom.
+    /// Essaie d’abord avec deux mots, sinon avec les majuscules d’un CamelCase,
+    /// puis retombe sur les deux premiers caractères.
     private func initials(from name: String) -> String {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty { return "?" }
@@ -183,6 +191,7 @@ private struct NearbyParkRow: View {
         return String(letters.prefix(2)).uppercased()
     }
 
+    /// Couleur de secours stable basée sur l’identifiant du parc.
     private func placeholderColor(for park: NearbyPark) -> Color {
         // Stable color based on park id
         let palette: [Color] = [
@@ -197,11 +206,13 @@ private struct NearbyParkRow: View {
 // MARK: - UIKit-based Pager with Peek (iOS 16+)
 @available(iOS 16.0, *)
 private struct ParksPeekPager: UIViewRepresentable {
+    /// Pages de 3 parcs chacune.
     let pages: [[NearbyPark]]
     @Binding var currentPage: Int
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
+    /// Crée un `UICollectionView` avec une mise en page en peek alignée à gauche.
     func makeUIView(context: Context) -> UICollectionView {
         let layout = Self.makeLayout()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -213,6 +224,7 @@ private struct ParksPeekPager: UIViewRepresentable {
         return collectionView
     }
 
+    /// Met à jour le contenu et synchronise le défilement sur la page courante.
     func updateUIView(_ uiView: UICollectionView, context: Context) {
         context.coordinator.applySnapshot(pages: pages)
         // Scroll to current page if needed
@@ -223,6 +235,7 @@ private struct ParksPeekPager: UIViewRepresentable {
         }
     }
 
+    /// Crée une `UICollectionViewCompositionalLayout` avec un peek de la page suivante.
     private static func makeLayout() -> UICollectionViewLayout {
         // Peek with leading alignment: fixed absolute peek in points, no inter-group spacing
         return UICollectionViewCompositionalLayout { _, environment in
@@ -253,6 +266,7 @@ private struct ParksPeekPager: UIViewRepresentable {
         }
     }
 
+    /// Gère la data source diffable et le suivi de page courante.
     final class Coordinator: NSObject, UICollectionViewDelegate {
         private let parent: ParksPeekPager
         private var dataSource: UICollectionViewDiffableDataSource<Int, Int>!
@@ -261,6 +275,7 @@ private struct ParksPeekPager: UIViewRepresentable {
             self.parent = parent
         }
 
+        /// Configure l’enregistrement des cellules et la data source diffable.
         func configure(collectionView: UICollectionView) {
             collectionView.contentInsetAdjustmentBehavior = .never
             let registration = UICollectionView.CellRegistration<UICollectionViewCell, Int> { cell, indexPath, itemIdentifier in
@@ -288,6 +303,7 @@ private struct ParksPeekPager: UIViewRepresentable {
             }
         }
 
+        /// Applique l’instantané (pages -> items) à la data source.
         func applySnapshot(pages: [[NearbyPark]]) {
             var snapshot = NSDiffableDataSourceSnapshot<Int, Int>()
             snapshot.appendSections([0])
@@ -302,6 +318,7 @@ private struct ParksPeekPager: UIViewRepresentable {
         }
         func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) { updateCurrentPage(scrollView) }
 
+        /// Met à jour l’index de page en fonction de la cellule centrée.
         private func updateCurrentPage(_ scrollView: UIScrollView) {
             guard let collectionView = scrollView as? UICollectionView else { return }
             let center = CGPoint(x: collectionView.bounds.midX + collectionView.contentOffset.x,

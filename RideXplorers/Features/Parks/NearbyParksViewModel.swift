@@ -3,8 +3,11 @@ import CoreLocation
 
 @MainActor
 final class NearbyParksViewModel: ObservableObject {
+    /// Parcs triés par distance croissante depuis la localisation courante.
     @Published var nearbyParks: [NearbyPark] = []
+    /// Indique si un chargement est en cours.
     @Published var isLoading: Bool = false
+    /// Message d’erreur lisible en cas d’échec réseau/GPS.
     @Published var errorMessage: String?
 
     private let parksProvider: ParksProviding
@@ -15,6 +18,8 @@ final class NearbyParksViewModel: ObservableObject {
         self.locationProvider = locationProvider ?? LocationService()
     }
 
+    /// Charge les `limit` parcs les plus proches en combinant
+    /// la localisation actuelle et les sources de parcs disponibles.
     func loadTopNearestParks(limit: Int = 5) async {
         isLoading = true
         errorMessage = nil
@@ -42,11 +47,11 @@ final class NearbyParksViewModel: ObservableObject {
         }
     }
 
+    /// Calcule la distance en mètres entre deux coordonnées.
     private static func distanceMeters(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> Double {
         let loc1 = CLLocation(latitude: from.latitude, longitude: from.longitude)
         let loc2 = CLLocation(latitude: to.latitude, longitude: to.longitude)
         return loc1.distance(from: loc2)
     }
 }
-
 
