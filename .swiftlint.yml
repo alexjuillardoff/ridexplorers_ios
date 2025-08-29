@@ -1,0 +1,31 @@
+disabled_rules:
+  - trailing_whitespace
+  - force_cast
+  - force_try
+  - todo
+  - orphaned_doc_comment
+
+opt_in_rules:
+  - empty_count
+  - fatal_error_message
+  - first_where
+
+line_length:
+  ignores_comments: true
+  ignores_urls: true
+  warning: 140
+  error: 200
+
+identifier_name:
+  min_length: 2
+  excluded: [id, x, y]
+
+type_name:
+  max_length: 60
+
+function_parameter_count:
+  warning: 6
+  error: 8
+
+reporter: "xcode"
+

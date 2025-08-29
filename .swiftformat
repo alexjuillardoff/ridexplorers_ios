@@ -1,0 +1,17 @@
+--self insert
+--stripunusedargs closure-only
+--ifdef no-indent
+--header ignore
+--wraparguments before-first
+--wrapcollections before-first
+--commas inline
+--decimalgrouping 3,6
+--binarygrouping 4,8
+--maxwidth 140
+--indent 4
+--importgrouping testable-bottom
+--trimwhitespace nonblank-lines
+--semicolons never
+--ranges spaced
+--stripunusedimports enabled
+
