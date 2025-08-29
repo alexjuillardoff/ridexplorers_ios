@@ -5,6 +5,7 @@ struct RideXplorersApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(NewsService.shared)
         }
     }
 }

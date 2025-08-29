@@ -1,21 +1,15 @@
 import SwiftUI
 
-fileprivate enum NewsSliderConstants {
-    static let autoSlideInterval: TimeInterval = 7
-    static let cardHeight: CGFloat = 360
-    static let imageHeight: CGFloat = 200
+private enum NewsSliderConstants {
+    static let autoSlideInterval: TimeInterval = AppConfig.UI.autoSlideInterval
+    static let cardHeight: CGFloat = AppConfig.UI.sliderCardHeight
+    static let imageHeight: CGFloat = AppConfig.UI.sliderImageHeight
 }
 
 struct NewsSliderView: View {
-    @ObservedObject private var newsService = NewsService.shared
+    @EnvironmentObject private var newsService: NewsService
     @State private var currentIndex: Int = 0
     @State private var selectedNewsItem: NewsItem?
-
-    private enum Constants {
-        static let autoSlideInterval: TimeInterval = 7
-        static let cardHeight: CGFloat = 360
-        static let imageHeight: CGFloat = 200
-    }
 
     private let autoSlideTimer = Timer.publish(every: NewsSliderConstants.autoSlideInterval, on: .main, in: .common).autoconnect()
 
@@ -161,5 +155,6 @@ private struct NewsCard: View {
 struct NewsSliderView_Previews: PreviewProvider {
     static var previews: some View {
         NewsSliderView()
+            .environmentObject(NewsService.shared)
     }
 }

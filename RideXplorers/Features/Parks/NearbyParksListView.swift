@@ -39,7 +39,7 @@ struct NearbyParksListView: View {
                     .padding(.horizontal)
             } else {
                 let items = Array(viewModel.nearbyParks.prefix(15))
-                let pages: [[NearbyPark]] = Self.chunk(items, size: 3)
+                let pages: [[NearbyPark]] = items.chunked(into: 3)
 
                 if #available(iOS 16.0, *) {
                     ParksPeekPager(pages: pages, currentPage: $currentPage)
@@ -65,12 +65,6 @@ struct NearbyParksListView: View {
         .task { await viewModel.loadTopNearestParks(limit: 15) }
     }
 
-    private static func chunk<T>(_ array: [T], size: Int) -> [[T]] {
-        guard size > 0 else { return [] }
-        return stride(from: 0, to: array.count, by: size).map { start in
-            Array(array[start ..< min(start + size, array.count)])
-        }
-    }
 }
 
 private struct NearbyParkRow: View {

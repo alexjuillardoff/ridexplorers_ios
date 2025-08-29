@@ -17,5 +17,6 @@ struct ParksView: View {
 struct ParksView_Previews: PreviewProvider {
     static var previews: some View {
         ParksView()
+            .environmentObject(NewsService.shared)
     }
 }

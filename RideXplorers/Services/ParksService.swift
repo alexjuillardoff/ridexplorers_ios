@@ -5,8 +5,8 @@ protocol ParksProviding {
 }
 
 struct ParksService: ParksProviding {
-    private let parksURL = URL(string: "https://queue-times.com/parks.json")!
-    private let themeParksURL = URL(string: "https://free.alexjuillard.fr:8000/api/theme-parks")!
+    private let parksURL = AppConfig.Endpoints.queueTimesParksURL
+    private let themeParksURL = AppConfig.Endpoints.themeParksBaseURL
 
     func fetchParks() async throws -> [QueueTimesPark] {
         // Use both sources concurrently, then merge and deduplicate

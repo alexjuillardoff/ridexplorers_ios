@@ -49,5 +49,6 @@ private struct TabItem {
 struct TabBarView_Previews: PreviewProvider {
     static var previews: some View {
         TabBarView()
+            .environmentObject(NewsService.shared)
     }
 }

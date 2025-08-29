@@ -10,8 +10,8 @@ actor ThemeParksImageCache {
 final class ThemeParksService {
     static let shared = ThemeParksService()
 
-    private let baseSearchURL = URL(string: "https://free.alexjuillard.fr:8000/api/theme-parks/search")!
-    private let rcdbBase = URL(string: "https://rcdb.com")!
+    private let baseSearchURL = AppConfig.Endpoints.themeParksSearchURL
+    private let rcdbBase = AppConfig.Endpoints.rcdbBaseURL
     private let cache = ThemeParksImageCache()
 
     private init() {}
